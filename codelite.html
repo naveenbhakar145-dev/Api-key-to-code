@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeLite IDE — OpenRouter</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0f1117;--bg2:#161b22;--bg3:#1c2128;
+    --border:#30363d;--border2:#484f58;
+    --text:#e6edf3;--text2:#8b949e;--text3:#6e7681;
+    --accent:#58a6ff;--accent-bg:#0d2044;
+    --success:#3fb950;--success-bg:#0d2818;
+    --warning:#d29922;--warning-bg:#2d2008;
+    --danger:#f85149;
+    --mono:'JetBrains Mono','Fira Code','Courier New',monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --radius:6px;
+  }
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  
+  /* TOPBAR */
+  #topbar{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+  #logo{font-size:14px;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:6px;margin-right:6px;}
+  #model-badge{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:1px solid var(--border);font-weight:500;}
+  .tbtn{font-size:12px;padding:5px 10px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .15s;}
+  .tbtn:hover{background:var(--bg3);border-color:var(--accent);}
+  .tbtn.run{background:var(--success-bg);color:var(--success);border-color:var(--success);}
+  .tbtn.ai-btn{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
+  .tbtn.cfg-btn{background:var(--warning-bg);color:var(--warning);border-color:var(--warning);}
+  #spacer{flex:1;}
+
+  /* LAYOUT */
+  #main{display:flex;flex:1;overflow:hidden;}
+  
+  /* SIDEBAR */
+  #sidebar{width:200px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+  #sidebar-hdr{padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}
+  #sidebar-hdr span{font-size:11px;color:var(--text2);font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
+  #add-btn{background:none;border:1px solid var(--border);border-radius:var(--radius);font-size:15px;color:var(--accent);cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  #add-btn:hover{background:var(--accent-bg);}
+  #file-list{flex:1;overflow-y:auto;padding:6px 4px;}
+  .fi{display:flex;align-items:center;padding:5px 8px;font-size:12px;cursor:pointer;color:var(--text2);border-radius:var(--radius);gap:6px;transition:all .1s;}
+  .fi:hover{background:var(--bg3);color:var(--text);}
+  .fi.active{background:var(--accent-bg);color:var(--accent);}
+  .fi .fn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .fi .del{opacity:0;background:none;border:none;cursor:pointer;color:var(--danger);font-size:11px;padding:0 2px;}
+  .fi:hover .del{opacity:0.6;}
+  .fi .del:hover{opacity:1;}
+
+  /* EDITOR */
+  #editor-area{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+  #etabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 8px;gap:1px;flex-shrink:0;overflow-x:auto;}
+  .etab{padding:6px 12px;font-size:11px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s;}
+  .etab:hover{color:var(--text);}
+  .etab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  #code-ed{flex:1;width:100%;padding:14px;font-family:var(--mono);font-size:13px;line-height:1.7;background:var(--bg);color:var(--text);border:none;resize:none;outline:none;tab-size:2;}
+
+  /* BOTTOM PANEL */
+  #bottom{height:220px;border-top:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  #btabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);}
+  .btab{padding:6px 16px;font-size:12px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;display:flex;align-items:center;gap:5px;transition:color .15s;}
+  .btab:hover{color:var(--text);}
+  .btab.active{color:var(--text);border-bottom-color:var(--border2);}
+
+  /* AI CHAT */
+  #ai-panel{flex:1;display:flex;overflow:hidden;}
+  #chat-msgs{flex:1;overflow-y:auto;padding:10px 14px;font-size:13px;}
+  .msg{margin-bottom:8px;}
+  .msg.user{text-align:right;}
+  .msg.user .bbl{display:inline-block;background:var(--accent-bg);color:var(--accent);padding:6px 10px;border-radius:10px;max-width:85%;text-align:left;font-size:12px;border:1px solid var(--border);}
+  .msg.ai .bbl{display:inline-block;background:var(--bg3);color:var(--text);padding:6px 10px;border-radius:10px;max-width:85%;font-size:12px;border:1px solid var(--border);white-space:pre-wrap;text-align:left;}
+  .msg.ai .bbl code{font-family:var(--mono);background:var(--bg2);padding:1px 4px;border-radius:3px;font-size:11px;}
+  #chat-row{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--border);background:var(--bg2);}
+  #chat-in{flex:1;font-size:12px;padding:6px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:var(--sans);resize:none;height:32px;outline:none;transition:border .15s;}
+  #chat-in:focus{border-color:var(--accent);}
+  #chat-send-btn{font-size:12px;padding:6px 14px;border-radius:var(--radius);border:1px solid var(--accent);background:var(--accent-bg);color:var(--accent);cursor:pointer;transition:all .15s;}
+  #chat-send-btn:hover{background:var(--accent);color:#000;}
+  #chat-send-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+  /* CONSOLE */
+  #console-out{flex:1;overflow-y:auto;padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--text);background:var(--bg);white-space:pre-wrap;display:none;}
+
+  /* CONFIG */
+  #cfg-panel{flex:1;overflow-y:auto;padding:12px 16px;display:none;gap:10px;flex-direction:column;background:var(--bg);}
+  #cfg-panel label{font-size:11px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;}
+  #cfg-panel input,#cfg-panel select,#cfg-panel textarea{width:100%;font-size:12px;padding:6px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:var(--mono);outline:none;transition:border .15s;}
+  #cfg-panel input:focus,#cfg-panel select:focus,#cfg-panel textarea:focus{border-color:var(--accent);}
+  #cfg-panel select option{background:var(--bg2);}
+  #save-cfg{font-size:12px;padding:6px 16px;border-radius:var(--radius);border:1px solid var(--success);background:var(--success-bg);color:var(--success);cursor:pointer;font-weight:500;width:fit-content;transition:all .15s;}
+  #save-cfg:hover{background:var(--success);color:#000;}
+  #cfg-status{font-size:11px;color:var(--text2);}
+  .cfg-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+
+  /* MODAL */
+  #modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;z-index:100;}
+  #modal{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;width:300px;}
+  #modal h3{font-size:14px;font-weight:600;margin-bottom:12px;}
+  #modal input{width:100%;font-size:13px;padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);color:var(--text);margin-bottom:12px;outline:none;font-family:var(--mono);}
+  #modal input:focus{border-color:var(--accent);}
+  #modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+  #modal-btns button{font-size:12px;padding:5px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;}
+  #modal-btns .ok{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);}
+  #modal-btns .ok:hover{background:var(--accent);color:#000;}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span id="logo">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    CodeLite
+  </span>
+  <span id="model-badge">not configured</span>
+  <span id="spacer"></span>
+  <button class="tbtn run" onclick="runCode()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run
+  </button>
+  <button class="tbtn ai-btn" onclick="aiReview()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg> AI Review
+  </button>
+  <button class="tbtn" onclick="fmtCode()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/></svg> Format
+  </button>
+  <button class="tbtn cfg-btn" onclick="switchBtab('cfg')">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg> Setup
+  </button>
+</div>
+
+<div id="main">
+  <div id="sidebar">
+    <div id="sidebar-hdr"><span>Files</span><button id="add-btn" onclick="showModal()" title="New file">+</button></div>
+    <div id="file-list"></div>
+  </div>
+  <div id="editor-area">
+    <div id="etabs"></div>
+    <textarea id="code-ed" spellcheck="false" oninput="onEdit()" onkeydown="handleTab(event)"></textarea>
+  </div>
+</div>
+
+<div id="bottom">
+  <div id="btabs">
+    <div class="btab active" onclick="switchBtab('ai')">💬 AI Chat</div>
+    <div class="btab" onclick="switchBtab('console')">⚡ Console</div>
+    <div class="btab" onclick="switchBtab('cfg')">⚙️ Config</div>
+  </div>
+  <div id="ai-panel">
+    <div id="chat-msgs">
+      <div class="msg ai"><div class="bbl">👋 Namaste! Main CodeLite AI hoon powered by OpenRouter.<br><br>Pehle <b>⚙️ Config</b> tab me API key daalo, phir koi bhi code likhwao ya fix karwao!</div></div>
+    </div>
+    <div id="chat-row">
+      <textarea id="chat-in" placeholder="Code likhwao, fix karwao, explain karwao... (Enter = send)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+      <button id="chat-send-btn" onclick="sendChat()">Send ↗</button>
+    </div>
+  </div>
+  <div id="console-out"></div>
+  <div id="cfg-panel">
+    <div class="cfg-section">
+      <div>
+        <label>OpenRouter API Key</label>
+        <input type="password" id="or-key" placeholder="sk-or-v1-xxxxxxxxxxxxxxxx"/>
+      </div>
+      <div>
+        <label>Model — Free ⚡ / Cheap 💰</label>
+        <select id="or-model">
+          <optgroup label="🆓 Completely Free">
+            <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (FREE) — fast, good</option>
+            <option value="google/gemma-3-27b-it:free">Google Gemma 3 27B (FREE)</option>
+            <option value="meta-llama/llama-4-scout:free">Llama 4 Scout (FREE)</option>
+            <option value="meta-llama/llama-4-maverick:free">Llama 4 Maverick (FREE)</option>
+            <option value="deepseek/deepseek-r1:free">DeepSeek R1 (FREE) — reasoning</option>
+            <option value="deepseek/deepseek-chat-v3-5:free">DeepSeek V3 Chat (FREE)</option>
+            <option value="mistralai/mistral-7b-instruct:free">Mistral 7B (FREE)</option>
+            <option value="qwen/qwen3-8b:free">Qwen3 8B (FREE)</option>
+            <option value="qwen/qwen3-30b-a3b:free">Qwen3 30B MoE (FREE)</option>
+            <option value="microsoft/phi-4-reasoning:free">Microsoft Phi-4 Reasoning (FREE)</option>
+          </optgroup>
+          <optgroup label="💰 Paid — Coding Best">
+            <option value="deepseek/deepseek-chat">DeepSeek V3 (~$0.28/M tokens)</option>
+            <option value="deepseek/deepseek-r1">DeepSeek R1 (~$0.55/M) — best reasoning</option>
+            <option value="qwen/qwen-2.5-coder-32b-instruct">Qwen 2.5 Coder 32B (~$0.07/M) — coding specialist</option>
+            <option value="google/gemini-flash-1.5">Gemini 1.5 Flash (~$0.07/M)</option>
+            <option value="anthropic/claude-haiku-3-5">Claude Haiku 3.5 — fast</option>
+            <option value="anthropic/claude-sonnet-4-5">Claude Sonnet 4.5</option>
+            <option value="openai/gpt-4o-mini">GPT-4o Mini (~$0.15/M)</option>
+          </optgroup>
+        </select>
+      </div>
+      <div>
+        <label>Custom System Prompt</label>
+        <textarea id="sys-prompt" style="height:48px;resize:none;">You are a helpful coding assistant. Reply in the same language the user writes in. Be concise and practical.</textarea>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button id="save-cfg" onclick="saveCfg()">✓ Save & Connect</button>
+        <span id="cfg-status"></span>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);line-height:1.7;">
+      <b style="color:var(--text);">Deploy kaise karo:</b><br>
+      1. Yeh HTML file save karo (Ctrl+S)<br>
+      2. <a href="https://app.netlify.com/drop" target="_blank" style="color:var(--accent);">Netlify Drop</a> — file drag karo, 30 sec me live!<br>
+      3. <a href="https://pages.github.com" target="_blank" style="color:var(--accent);">GitHub Pages</a> — free hosting, custom domain<br>
+      4. <a href="https://vercel.com" target="_blank" style="color:var(--accent);">Vercel</a> — fastest, free tier
+    </div>
+  </div>
+</div>
+
+<div id="modal-ov">
+  <div id="modal">
+    <h3>New file</h3>
+    <input type="text" id="nf-name" placeholder="e.g. app.py, utils.js, style.css" onkeydown="if(event.key==='Enter')doAddFile()"/>
+    <div id="modal-btns"><button onclick="hideModal()">Cancel</button><button class="ok" onclick="doAddFile()">Create</button></div>
+  </div>
+</div>
+
+<script>
+const STARTERS = {
+  'main.py': `# Python starter\ndef greet(name):\n    return f"Hello, {name}!"\n\nresult = greet("World")\nprint(result)\n`,
+  'index.js': `// JavaScript\nconst add = (a, b) => a + b;\nconst multiply = (a, b) => a * b;\n\nconsole.log("3 + 4 =", add(3, 4));\nconsole.log("3 × 4 =", multiply(3, 4));\n`,
+  'index.html': `<!DOCTYPE html>\n<html>\n<head>\n  <title>My App</title>\n  <style>\n    body { font-family: sans-serif; padding: 2rem; }\n    button { padding: 8px 16px; cursor: pointer; }\n  </style>\n</head>\n<body>\n  <h1>Hello World</h1>\n  <button onclick="alert('Clicked!')">Click me</button>\n</body>\n</html>\n`,
+  'style.css': `/* Global styles */\nbody {\n  font-family: -apple-system, sans-serif;\n  margin: 0;\n  padding: 20px;\n  background: #f5f5f5;\n}\n`
+};
+
+let files = { 'main.py': STARTERS['main.py'], 'index.js': STARTERS['index.js'] };
+let activeFile = 'main.py';
+let cfg = { key:'', model:'google/gemini-2.0-flash-exp:free', sys:'You are a helpful coding assistant. Reply in the same language the user writes in. Be concise and practical.' };
+let chatHistory = [];
+let curBtab = 'ai';
+
+function renderFiles() {
+  const list = document.getElementById('file-list');
+  list.innerHTML = '';
+  Object.keys(files).forEach(name => {
+    const d = document.createElement('div');
+    d.className = 'fi' + (name === activeFile ? ' active' : '');
+    d.innerHTML = `<span style="font-size:14px;">${icon(name)}</span><span class="fn" onclick="openFile('${name}')">${name}</span><button class="del" onclick="delFile('${name}')">✕</button>`;
+    list.appendChild(d);
+  });
+  renderTabs();
+}
+
+function icon(n) {
+  if (n.endsWith('.py')) return '🐍';
+  if (n.endsWith('.js') || n.endsWith('.ts')) return '📜';
+  if (n.endsWith('.html')) return '🌐';
+  if (n.endsWith('.css')) return '🎨';
+  if (n.endsWith('.md')) return '📝';
+  if (n.endsWith('.json')) return '{}';
+  if (n.endsWith('.sh')) return '⚙️';
+  return '📄';
+}
+
+function renderTabs() {
+  document.getElementById('etabs').innerHTML = Object.keys(files).map(n =>
+    `<div class="etab ${n === activeFile ? 'active' : ''}" onclick="openFile('${n}')">${n}</div>`
+  ).join('');
+}
+
+function openFile(name) {
+  files[activeFile] = document.getElementById('code-ed').value;
+  activeFile = name;
+  document.getElementById('code-ed').value = files[name];
+  renderFiles();
+}
+
+function onEdit() { files[activeFile] = document.getElementById('code-ed').value; }
+
+function handleTab(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const t = e.target, s = t.selectionStart;
+    t.value = t.value.substring(0, s) + '  ' + t.value.substring(t.selectionEnd);
+    t.selectionStart = t.selectionEnd = s + 2;
+    onEdit();
+  }
+}
+
+function showModal() {
+  document.getElementById('modal-ov').style.display = 'flex';
+  document.getElementById('nf-name').value = '';
+  setTimeout(() => document.getElementById('nf-name').focus(), 50);
+}
+function hideModal() { document.getElementById('modal-ov').style.display = 'none'; }
+function doAddFile() {
+  const name = document.getElementById('nf-name').value.trim();
+  if (!name) return;
+  files[name] = STARTERS[name] || '';
+  hideModal(); openFile(name);
+}
+function delFile(name) {
+  if (Object.keys(files).length === 1) return;
+  delete files[name];
+  if (activeFile === name) { activeFile = Object.keys(files)[0]; document.getElementById('code-ed').value = files[activeFile]; }
+  renderFiles();
+}
+
+function saveCfg() {
+  cfg.key = document.getElementById('or-key').value.trim();
+  cfg.model = document.getElementById('or-model').value;
+  cfg.sys = document.getElementById('sys-prompt').value.trim();
+  const badge = document.getElementById('model-badge');
+  const st = document.getElementById('cfg-status');
+  if (cfg.key) {
+    const short = cfg.model.split('/').pop().replace(':free', '');
+    badge.textContent = '✓ ' + short + (cfg.model.includes(':free') ? ' (FREE)' : '');
+    badge.style.background = 'var(--success-bg)'; badge.style.color = 'var(--success)'; badge.style.borderColor = 'var(--success)';
+    st.innerHTML = '<span style="color:var(--success)">✓ Connected!</span>';
+    setTimeout(() => switchBtab('ai'), 800);
+  } else {
+    st.innerHTML = '<span style="color:var(--danger)">✗ API key daalo!</span>';
+  }
+}
+
+function switchBtab(tab) {
+  curBtab = tab;
+  document.querySelectorAll('.btab').forEach((el, i) => el.classList.toggle('active', ['ai', 'console', 'cfg'][i] === tab));
+  document.getElementById('ai-panel').style.display = tab === 'ai' ? 'flex' : 'none';
+  document.getElementById('console-out').style.display = tab === 'console' ? 'block' : 'none';
+  document.getElementById('cfg-panel').style.display = tab === 'cfg' ? 'flex' : 'none';
+}
+
+function addMsg(role, text) {
+  const box = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.innerHTML = `<div class="bbl">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').replace(/`([^`]+)`/g,'<code>$1</code>')}</div>`;
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+  return d;
+}
+
+async function callOR(messages) {
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key, 'HTTP-Referer': location.href, 'X-Title': 'CodeLite IDE' },
+    body: JSON.stringify({ model: cfg.model, messages: [{ role: 'system', content: cfg.sys }, ...messages], max_tokens: 2000 })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  return data.choices[0].message.content;
+}
+
+async function sendChat() {
+  if (!cfg.key) { switchBtab('cfg'); return; }
+  const inp = document.getElementById('chat-in');
+  const text = inp.value.trim(); if (!text) return;
+  inp.value = ''; addMsg('user', text);
+  const allCode = Object.entries(files).map(([n, c]) => `### ${n}\n\`\`\`\n${c}\n\`\`\``).join('\n\n');
+  chatHistory.push({ role: 'user', content: `Open files context:\n${allCode}\n\nUser question: ${text}` });
+  const btn = document.getElementById('chat-send-btn'); btn.disabled = true;
+  const t = addMsg('ai', '⋯ Soch raha hoon...');
+  try {
+    const reply = await callOR(chatHistory);
+    chatHistory.push({ role: 'assistant', content: reply });
+    t.querySelector('.bbl').innerHTML = reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').replace(/`([^`]+)`/g,'<code>$1</code>');
+    document.getElementById('chat-msgs').scrollTop = 9999;
+  } catch (e) { t.querySelector('.bbl').innerHTML = '❌ Error: ' + e.message; }
+  btn.disabled = false;
+}
+
+async function aiReview() {
+  if (!cfg.key) { switchBtab('cfg'); return; }
+  switchBtab('ai');
+  addMsg('user', `Review karo: ${activeFile}`);
+  const btn = document.getElementById('chat-send-btn'); btn.disabled = true;
+  const t = addMsg('ai', '⋯ Code review kar raha hoon...');
+  try {
+    const reply = await callOR([{ role: 'user', content: `Review this code and give improvements, bugs, best practices:\n\`\`\`\n${files[activeFile]}\n\`\`\`` }]);
+    t.querySelector('.bbl').innerHTML = reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').replace(/`([^`]+)`/g,'<code>$1</code>');
+    document.getElementById('chat-msgs').scrollTop = 9999;
+  } catch (e) { t.querySelector('.bbl').innerHTML = '❌ Error: ' + e.message; }
+  btn.disabled = false;
+}
+
+function runCode() {
+  switchBtab('console');
+  const code = files[activeFile];
+  const out = document.getElementById('console-out');
+  out.innerHTML = `<span style="color:#6e7681">▶ Running ${activeFile}...\n</span>`;
+  if (activeFile.endsWith('.js')) {
+    try {
+      const logs = [];
+      const fake = { log: (...a) => logs.push(a.map(x=>typeof x==='object'?JSON.stringify(x):x).join(' ')), error: (...a) => logs.push('ERR: '+a.join(' ')), warn: (...a) => logs.push('WARN: '+a.join(' ')), table: (a) => logs.push(JSON.stringify(a, null, 2)) };
+      new Function('console', code)(fake);
+      out.innerHTML += logs.join('\n') || '(no output)';
+    } catch (e) { out.innerHTML += `<span style="color:#f85149">${e.message}</span>`; }
+  } else if (activeFile.endsWith('.html')) {
+    const w = window.open('about:blank'); w.document.write(code);
+    out.innerHTML += '✓ HTML opened in new tab';
+  } else {
+    out.innerHTML += `<span style="color:#6e7681">${activeFile} browser me directly run nahi hota.\nAI Chat me pucho ya .js / .html file use karo.</span>`;
+  }
+}
+
+function fmtCode() {
+  let c = files[activeFile];
+  if (activeFile.endsWith('.json')) { try { c = JSON.stringify(JSON.parse(c), null, 2); } catch (e) {} }
+  files[activeFile] = c; document.getElementById('code-ed').value = c;
+}
+
+document.getElementById('code-ed').value = files[activeFile];
+renderFiles();
+</script>
+</body>
+</html>
