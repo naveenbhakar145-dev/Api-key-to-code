@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeLite — Online IDE with AI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ffffff;--bg2:#f6f8fa;--bg3:#eef1f4;--bg4:#e5e9ed;
+  --border:#d8dee4;--border2:#c4ccd4;
+  --text:#1b1f24;--text2:#57606a;--text3:#8b949e;
+  --accent:#0969da;--accent-bg:rgba(9,105,218,0.08);--accent-hover:#0757ba;
+  --success:#1a7f37;--success-bg:rgba(26,127,55,0.08);
+  --warning:#9a6700;--warning-bg:rgba(154,103,0,0.08);
+  --danger:#cf222e;--danger-bg:rgba(207,34,46,0.08);
+  --purple:#8250df;--purple-bg:rgba(130,80,223,0.08);
+  --mono:'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;
+  --r:6px;
+  --shadow:0 1px 3px rgba(27,31,36,0.08);
+  --shadow-lg:0 8px 24px rgba(27,31,36,0.12);
+}
+html,body{height:100%;}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);}
+
+/* ═══════════════ SCREENS ═══════════════ */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+
+/* ═══════════════ LANDING PAGE ═══════════════ */
+#landing{background:var(--bg);}
+#land-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 32px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:rgba(255,255,255,0.9);backdrop-filter:blur(8px);z-index:50;
+}
+#land-logo{font-size:17px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;}
+#land-logo svg{color:var(--accent);}
+.nav-links{display:flex;gap:28px;align-items:center;}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:14px;font-weight:500;transition:color .15s;}
+.nav-links a:hover{color:var(--text);}
+.btn-primary{
+  background:var(--accent);color:#fff;border:none;padding:9px 20px;
+  border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;
+  transition:background .15s;
+}
+.btn-primary:hover{background:var(--accent-hover);}
+.btn-ghost{
+  background:transparent;color:var(--text);border:1px solid var(--border2);
+  padding:8px 18px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;
+  transition:all .15s;
+}
+.btn-ghost:hover{background:var(--bg2);border-color:var(--text3);}
+
+#hero{
+  max-width:920px;margin:0 auto;padding:88px 32px 64px;text-align:center;
+}
+#hero .kicker{
+  display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--accent);
+  background:var(--accent-bg);padding:5px 14px;border-radius:20px;font-weight:600;margin-bottom:24px;
+}
+#hero h1{
+  font-size:52px;line-height:1.12;font-weight:800;letter-spacing:-0.02em;
+  color:var(--text);margin-bottom:20px;
+}
+#hero h1 span{color:var(--accent);}
+#hero p{
+  font-size:18px;color:var(--text2);line-height:1.6;max-width:600px;margin:0 auto 36px;
+}
+#hero-actions{display:flex;gap:12px;justify-content:center;margin-bottom:20px;}
+#hero-actions button{font-size:15px;padding:12px 26px;}
+#hero-note{font-size:13px;color:var(--text3);}
+
+#hero-preview{
+  max-width:1000px;margin:56px auto 0;border-radius:12px;overflow:hidden;
+  box-shadow:var(--shadow-lg);border:1px solid var(--border);
+  background:#0d1117;
+}
+#hero-preview .fake-bar{
+  display:flex;align-items:center;gap:6px;padding:10px 14px;background:#161b22;
+  border-bottom:1px solid #30363d;
+}
+#hero-preview .fake-dot{width:10px;height:10px;border-radius:50%;}
+#hero-preview .fake-code{
+  padding:24px;font-family:var(--mono);font-size:13px;line-height:1.8;color:#e6edf3;text-align:left;
+}
+#hero-preview .fc-kw{color:#ff7b72;}
+#hero-preview .fc-str{color:#a5d6ff;}
+#hero-preview .fc-fn{color:#d2a8ff;}
+#hero-preview .fc-cm{color:#8b949e;}
+
+#features{max-width:1100px;margin:0 auto;padding:80px 32px;}
+#features h2{
+  font-size:32px;font-weight:800;text-align:center;margin-bottom:12px;letter-spacing:-0.01em;
+}
+#features .sub{text-align:center;color:var(--text2);font-size:16px;margin-bottom:52px;}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.feat-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:26px;transition:all .2s;
+}
+.feat-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-2px);}
+.feat-icon{
+  width:40px;height:40px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;margin-bottom:16px;
+}
+.feat-card h3{font-size:16px;font-weight:700;margin-bottom:8px;}
+.feat-card p{font-size:14px;color:var(--text2);line-height:1.6;}
+
+#models-strip{
+  background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:48px 32px;text-align:center;
+}
+#models-strip h3{font-size:22px;font-weight:700;margin-bottom:8px;}
+#models-strip p{color:var(--text2);font-size:14px;margin-bottom:24px;}
+.model-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:700px;margin:0 auto;}
+.model-chip{
+  background:var(--bg);border:1px solid var(--border);padding:6px 14px;
+  border-radius:20px;font-size:12px;font-family:var(--mono);color:var(--text2);
+}
+
+#cta-section{max-width:700px;margin:0 auto;padding:80px 32px;text-align:center;}
+#cta-section h2{font-size:30px;font-weight:800;margin-bottom:14px;}
+#cta-section p{color:var(--text2);font-size:16px;margin-bottom:28px;}
+
+#land-footer{
+  border-top:1px solid var(--border);padding:24px 32px;text-align:center;
+  color:var(--text3);font-size:13px;
+}
+
+/* ═══════════════ AUTH SCREEN ═══════════════ */
+#auth-screen{
+  display:none;min-height:100vh;align-items:center;justify-content:center;
+  background:var(--bg2);
+}
+#auth-screen.active{display:flex;}
+#auth-box{
+  background:var(--bg);border:1px solid var(--border);border-radius:14px;
+  padding:36px;width:380px;box-shadow:var(--shadow-lg);
+}
+#auth-logo{
+  display:flex;align-items:center;gap:8px;justify-content:center;
+  font-size:18px;font-weight:700;margin-bottom:6px;color:var(--text);
+}
+#auth-logo svg{color:var(--accent);}
+#auth-box .auth-sub{text-align:center;color:var(--text2);font-size:13px;margin-bottom:26px;}
+.auth-tabs{display:flex;background:var(--bg3);border-radius:8px;padding:3px;margin-bottom:22px;}
+.auth-tab{
+  flex:1;text-align:center;padding:8px;font-size:13px;font-weight:600;
+  color:var(--text2);cursor:pointer;border-radius:6px;transition:all .15s;
+}
+.auth-tab.active{background:var(--bg);color:var(--text);box-shadow:var(--shadow);}
+.auth-field{margin-bottom:14px;}
+.auth-field label{
+  display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;
+}
+.auth-field input{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--r);
+  font-size:14px;outline:none;transition:border .15s;font-family:var(--sans);background:var(--bg);color:var(--text);
+}
+.auth-field input:focus{border-color:var(--accent);}
+#auth-submit{
+  width:100%;padding:11px;background:var(--accent);color:#fff;border:none;
+  border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;margin-top:4px;
+  transition:background .15s;
+}
+#auth-submit:hover{background:var(--accent-hover);}
+#auth-error{
+  font-size:12px;color:var(--danger);margin-top:10px;text-align:center;min-height:16px;
+}
+#auth-note{
+  font-size:11px;color:var(--text3);text-align:center;margin-top:18px;line-height:1.6;
+  padding-top:16px;border-top:1px solid var(--border);
+}
+#back-to-land{
+  position:fixed;top:20px;left:24px;font-size:13px;color:var(--text2);
+  cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:500;
+}
+#back-to-land:hover{color:var(--text);}
+
+/* ═══════════════ IDE (LIGHT THEME) ═══════════════ */
+#ide-screen{display:none;flex-direction:column;height:100vh;overflow:hidden;}
+#ide-screen.active{display:flex;}
+
+#topbar{
+  display:flex;align-items:center;gap:6px;padding:0 12px;
+  height:46px;background:var(--bg);border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+#logo{font-size:13px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:7px;margin-right:4px;}
+.sep{width:1px;height:20px;background:var(--border);margin:0 2px;}
+#model-badge{
+  font-size:11px;padding:4px 10px;border-radius:20px;
+  background:var(--bg3);color:var(--text2);border:1px solid var(--border);
+  font-weight:500;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;
+}
+#spacer{flex:1;}
+.tbtn{
+  font-size:12px;padding:6px 12px;border-radius:var(--r);
+  border:1px solid var(--border);background:var(--bg);color:var(--text2);
+  cursor:pointer;display:flex;align-items:center;gap:5px;
+  transition:all .15s;white-space:nowrap;height:31px;font-weight:500;
+}
+.tbtn:hover{background:var(--bg2);color:var(--text);border-color:var(--border2);}
+.tbtn.run{background:var(--success-bg);color:var(--success);border-color:rgba(26,127,55,.25);}
+.tbtn.run:hover{background:var(--success);color:#fff;}
+.tbtn.ai{background:var(--accent-bg);color:var(--accent);border-color:rgba(9,105,218,.25);}
+.tbtn.ai:hover{background:var(--accent);color:#fff;}
+.tbtn.cfg{background:var(--warning-bg);color:var(--warning);border-color:rgba(154,103,0,.25);}
+.tbtn.cfg:hover{background:var(--warning);color:#fff;}
+.tbtn.fmt{background:var(--purple-bg);color:var(--purple);border-color:rgba(130,80,223,.25);}
+.tbtn.fmt:hover{background:var(--purple);color:#fff;}
+.tbtn.share{background:#fff7e6;color:#9a6700;border-color:rgba(154,103,0,.25);}
+.tbtn.share:hover{background:#9a6700;color:#fff;}
+#user-chip{
+  font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:20px;background:var(--bg2);border:1px solid var(--border);
+  cursor:pointer;
+}
+#user-chip:hover{background:var(--bg3);}
+
+#main{display:flex;flex:1;overflow:hidden;min-height:0;}
+
+#sidebar{
+  width:200px;min-width:140px;max-width:320px;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;position:relative;
+}
+#sb-resize{position:absolute;right:-3px;top:0;bottom:0;width:6px;cursor:col-resize;z-index:10;}
+#sb-resize:hover,#sb-resize.dragging{background:var(--accent);}
+#sb-top{
+  padding:9px 10px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+#sb-top span{font-size:10px;color:var(--text3);font-weight:700;letter-spacing:.08em;text-transform:uppercase;}
+#add-btn{
+  background:none;border:1px solid var(--border);border-radius:var(--r);
+  font-size:16px;line-height:1;color:var(--accent);cursor:pointer;
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+}
+#add-btn:hover{background:var(--accent-bg);}
+#file-list{flex:1;overflow-y:auto;padding:4px;}
+.fi{
+  display:flex;align-items:center;padding:6px 8px;font-size:12px;
+  cursor:pointer;color:var(--text2);border-radius:var(--r);gap:6px;
+  transition:background .1s;user-select:none;
+}
+.fi:hover{background:var(--bg3);color:var(--text);}
+.fi.active{background:var(--accent-bg);color:var(--accent);font-weight:600;}
+.fi .fn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fi .del{opacity:0;background:none;border:none;cursor:pointer;color:var(--danger);font-size:10px;padding:1px 3px;border-radius:3px;}
+.fi:hover .del{opacity:.5;}
+.fi .del:hover{opacity:1;background:var(--danger-bg);}
+
+#editor-wrap{display:flex;flex-direction:column;flex:1;min-width:0;overflow:hidden;}
+#etabs{
+  display:flex;background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 8px;gap:0;flex-shrink:0;overflow-x:auto;
+}
+#etabs::-webkit-scrollbar{height:0;}
+.etab{
+  padding:9px 14px;font-size:12px;cursor:pointer;color:var(--text2);
+  border-bottom:2px solid transparent;white-space:nowrap;
+  transition:color .15s;display:flex;align-items:center;gap:6px;
+}
+.etab:hover{color:var(--text);}
+.etab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--bg);font-weight:600;}
+.etab-close{font-size:10px;opacity:0;background:none;border:none;color:var(--text2);cursor:pointer;padding:0 2px;}
+.etab:hover .etab-close{opacity:.5;}
+.etab-close:hover{opacity:1!important;color:var(--danger);}
+
+#ed-container{flex:1;display:flex;overflow:hidden;position:relative;background:var(--bg);}
+#line-nums{
+  padding:14px 0;font-family:var(--mono);font-size:13px;line-height:1.7;
+  color:var(--text3);text-align:right;padding-right:12px;padding-left:12px;
+  background:var(--bg2);border-right:1px solid var(--border);
+  user-select:none;overflow:hidden;flex-shrink:0;min-width:48px;
+}
+#code-ed{
+  flex:1;padding:14px 16px;font-family:var(--mono);font-size:13px;
+  line-height:1.7;background:var(--bg);color:var(--text);
+  border:none;resize:none;outline:none;tab-size:2;white-space:pre;overflow:auto;
+}
+#code-ed::selection{background:rgba(9,105,218,.15);}
+
+#v-resize{height:5px;background:var(--border);cursor:row-resize;flex-shrink:0;transition:background .15s;}
+#v-resize:hover,#v-resize.dragging{background:var(--accent);}
+
+#bottom{height:240px;min-height:100px;max-height:60vh;display:flex;flex-direction:column;flex-shrink:0;background:var(--bg);}
+#btabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.btab{
+  padding:8px 16px;font-size:12px;cursor:pointer;color:var(--text2);
+  border-bottom:2px solid transparent;display:flex;align-items:center;gap:5px;
+  transition:all .15s;font-weight:500;
+}
+.btab:hover{color:var(--text);}
+.btab.active{color:var(--text);border-bottom-color:var(--accent);}
+
+#ai-panel{flex:1;display:flex;overflow:hidden;}
+#chat-msgs{flex:1;overflow-y:auto;padding:10px 14px;font-size:13px;display:flex;flex-direction:column;gap:8px;}
+.msg-user{align-self:flex-end;max-width:80%;}
+.msg-user .bbl{
+  background:var(--accent);color:#fff;padding:8px 12px;border-radius:12px 12px 2px 12px;
+  font-size:12px;line-height:1.6;word-break:break-word;
+}
+.msg-ai{align-self:flex-start;max-width:88%;}
+.msg-ai .bbl{
+  background:var(--bg2);color:var(--text);padding:8px 12px;border-radius:12px 12px 12px 2px;
+  font-size:12px;border:1px solid var(--border);line-height:1.7;word-break:break-word;white-space:pre-wrap;
+}
+.msg-ai .bbl code{font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:4px;font-size:11px;color:var(--purple);}
+.msg-ai .bbl pre{
+  background:#161b22;color:#e6edf3;border-radius:var(--r);padding:10px;margin:6px 0;
+  overflow-x:auto;font-family:var(--mono);font-size:11px;
+}
+.msg-ai .bbl pre code{background:none;padding:0;color:inherit;}
+#chat-row{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+#chat-in{
+  flex:1;font-size:12px;padding:8px 11px;border-radius:var(--r);border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-family:var(--sans);resize:none;height:34px;outline:none;
+  transition:border .15s;line-height:1.4;
+}
+#chat-in:focus{border-color:var(--accent);}
+#chat-send{
+  font-size:12px;padding:8px 16px;border-radius:var(--r);border:1px solid rgba(9,105,218,.4);
+  background:var(--accent-bg);color:var(--accent);cursor:pointer;transition:all .15s;white-space:nowrap;font-weight:600;
+}
+#chat-send:hover:not(:disabled){background:var(--accent);color:#fff;}
+#chat-send:disabled{opacity:.35;cursor:not-allowed;}
+#ctx-check{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);cursor:pointer;}
+
+#console-out{
+  flex:1;overflow-y:auto;padding:10px 14px;font-family:var(--mono);font-size:12px;
+  color:var(--text);background:var(--bg);white-space:pre-wrap;display:none;line-height:1.7;
+}
+.con-ok{color:var(--success);}
+.con-err{color:var(--danger);}
+.con-info{color:var(--text2);}
+
+#cfg-panel{flex:1;overflow-y:auto;padding:14px 16px;display:none;flex-direction:column;gap:12px;background:var(--bg);}
+.cfg-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;}
+.cfg-card h4{font-size:12px;font-weight:700;color:var(--text2);}
+.cfg-row{display:flex;flex-direction:column;gap:4px;}
+.cfg-row label{font-size:10px;color:var(--text3);font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.cfg-row input,.cfg-row textarea{
+  font-size:12px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-family:var(--mono);outline:none;width:100%;transition:border .15s;
+}
+.cfg-row input:focus,.cfg-row textarea:focus{border-color:var(--accent);}
+
+#model-search-wrap{position:relative;}
+#model-search-input{
+  width:100%;font-size:12px;padding:8px 32px 8px 10px;border-radius:var(--r);
+  border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:var(--sans);
+  outline:none;transition:border .15s;
+}
+#model-search-input:focus{border-color:var(--accent);}
+#model-search-icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;}
+#model-list-wrap{max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);background:var(--bg);}
+.model-item{
+  padding:8px 10px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;transition:background .1s;
+}
+.model-item:last-child{border-bottom:none;}
+.model-item:hover{background:var(--bg2);}
+.model-item.selected{background:var(--accent-bg);}
+.model-item .mi-name{flex:1;color:var(--text);font-family:var(--mono);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mi-badge{font-size:10px;padding:1px 6px;border-radius:10px;white-space:nowrap;flex-shrink:0;}
+.mi-badge.free{background:var(--success-bg);color:var(--success);}
+.mi-badge.paid{background:var(--bg3);color:var(--text3);}
+.mi-ctx{font-size:10px;color:var(--text3);flex-shrink:0;}
+#model-loading{padding:14px;text-align:center;color:var(--text2);font-size:12px;}
+#model-filter-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.mf-btn{
+  font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text2);cursor:pointer;transition:all .15s;
+}
+.mf-btn:hover{border-color:var(--border2);color:var(--text);}
+.mf-btn.active{background:var(--accent-bg);color:var(--accent);border-color:rgba(9,105,218,.35);}
+.cfg-btns{display:flex;align-items:center;gap:10px;}
+#save-cfg{
+  font-size:12px;padding:7px 18px;border-radius:var(--r);border:1px solid rgba(26,127,55,.35);
+  background:var(--success-bg);color:var(--success);cursor:pointer;font-weight:700;transition:all .15s;
+}
+#save-cfg:hover{background:var(--success);color:#fff;}
+#cfg-status{font-size:11px;color:var(--text2);}
+#logout-btn{
+  font-size:12px;padding:7px 14px;border-radius:var(--r);border:1px solid var(--border);
+  background:var(--bg);color:var(--danger);cursor:pointer;font-weight:600;
+}
+#logout-btn:hover{background:var(--danger-bg);}
+
+/* ═══════════════ MODALS ═══════════════ */
+#modal-ov,#share-ov{
+  position:fixed;inset:0;background:rgba(27,31,36,.5);display:none;
+  align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(2px);
+}
+#modal,#share-modal{
+  background:var(--bg);border:1px solid var(--border);border-radius:12px;
+  padding:22px;width:340px;box-shadow:var(--shadow-lg);
+}
+#modal h3,#share-modal h3{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--text);}
+#modal input,#share-modal input,#share-modal textarea{
+  width:100%;font-size:13px;padding:9px 11px;border-radius:var(--r);border:1px solid var(--border);
+  background:var(--bg);color:var(--text);margin-bottom:14px;outline:none;font-family:var(--mono);transition:border .15s;
+}
+#modal input:focus,#share-modal input:focus{border-color:var(--accent);}
+#modal-btns,#share-btns{display:flex;gap:8px;justify-content:flex-end;}
+#modal-btns button,#share-btns button{
+  font-size:12px;padding:7px 16px;border-radius:var(--r);border:1px solid var(--border);
+  background:var(--bg);color:var(--text);cursor:pointer;
+}
+#modal-btns .ok,#share-btns .ok{background:var(--accent-bg);color:var(--accent);border-color:rgba(9,105,218,.4);}
+#modal-btns .ok:hover,#share-btns .ok:hover{background:var(--accent);color:#fff;}
+#share-modal p{font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;}
+#share-link{background:var(--bg2);font-size:11px;word-break:break-all;padding:10px;border-radius:var(--r);border:1px solid var(--border);margin-bottom:14px;color:var(--text2);max-height:80px;overflow-y:auto;}
+
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+@media(max-width:800px){
+  .feat-grid{grid-template-columns:1fr;}
+  #hero h1{font-size:36px;}
+  #hero p{font-size:16px;}
+  .nav-links{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ -->
+<!-- LANDING PAGE                        -->
+<!-- ═══════════════════════════════════ -->
+<div id="landing" class="screen active">
+  <nav id="land-nav">
+    <div id="land-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      CodeLite
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#models">Models</a>
+      <button class="btn-ghost" onclick="goToAuth('login')">Log in</button>
+      <button class="btn-primary" onclick="goToAuth('signup')">Get Started</button>
+    </div>
+  </nav>
+
+  <section id="hero">
+    <div class="kicker">✦ Powered by OpenRouter — 600+ AI models</div>
+    <h1>Code, run, and ship —<br>with an <span>AI pair programmer</span> built in.</h1>
+    <p>A free online IDE that runs in your browser. Write code, chat with any AI model to fix or explain it, and share your work with a link — no installs required.</p>
+    <div id="hero-actions">
+      <button class="btn-primary" onclick="goToAuth('signup')">Start Coding Free</button>
+      <button class="btn-ghost" onclick="goToAuth('login')">I have an account</button>
+    </div>
+    <div id="hero-note">No credit card needed · Bring your own OpenRouter API key · Your key stays in your browser</div>
+
+    <div id="hero-preview">
+      <div class="fake-bar">
+        <span class="fake-dot" style="background:#ff5f56"></span>
+        <span class="fake-dot" style="background:#ffbd2e"></span>
+        <span class="fake-dot" style="background:#27c93f"></span>
+      </div>
+      <div class="fake-code"><span class="fc-cm"># Python starter</span>
+<span class="fc-kw">def</span> <span class="fc-fn">greet</span>(name):
+    <span class="fc-kw">return</span> <span class="fc-str">f"Hello, {name}!"</span>
+
+result = greet(<span class="fc-str">"World"</span>)
+<span class="fc-fn">print</span>(result)</div>
+    </div>
+  </section>
+
+  <section id="features">
+    <h2>Everything you need, nothing you don't</h2>
+    <p class="sub">A focused toolset for writing and shipping code faster</p>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(9,105,218,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0969da" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <h3>Multi-file editor</h3>
+        <p>Create, edit, and organize as many files as you need with tabs, line numbers, and auto-closing brackets.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(130,80,223,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8250df" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Chat with 600+ models</h3>
+        <p>Ask any OpenRouter model to review, fix, or explain your code — free and paid models, your choice.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(26,127,55,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a7f37" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <h3>Run instantly</h3>
+        <p>Execute JavaScript and preview HTML right in the browser — no setup, no server needed.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(154,103,0,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9a6700" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </div>
+        <h3>Share your code</h3>
+        <p>Generate a link to your project and send it to anyone — they open it straight in their own editor.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(207,34,46,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cf222e" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3>Your key, your control</h3>
+        <p>Bring your own OpenRouter API key. It's stored only in your browser — never sent to any server of ours.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:rgba(9,105,218,.1)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0969da" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>
+        </div>
+        <h3>Format & clean up</h3>
+        <p>One click to tidy indentation and whitespace before you commit or share your code.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="models" style="max-width:1100px;margin:0 auto;">
+    <div id="models-strip">
+      <h3>Pick from hundreds of AI models</h3>
+      <p>Free and paid options from every major lab, refreshed live from OpenRouter</p>
+      <div class="model-chips">
+        <span class="model-chip">deepseek/deepseek-r1</span>
+        <span class="model-chip">google/gemini-2.0-flash-exp:free</span>
+        <span class="model-chip">anthropic/claude-sonnet-4-5</span>
+        <span class="model-chip">qwen/qwen3-30b-a3b:free</span>
+        <span class="model-chip">meta-llama/llama-4-maverick</span>
+        <span class="model-chip">openai/gpt-4o-mini</span>
+        <span class="model-chip">+ 600 more</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="cta-section">
+    <h2>Ready to write your first line?</h2>
+    <p>Sign up in seconds — just a username and password, stored securely in your own browser.</p>
+    <button class="btn-primary" style="font-size:15px;padding:12px 32px;" onclick="goToAuth('signup')">Get Started Free</button>
+  </section>
+
+  <footer id="land-footer">
+    CodeLite — an online IDE with built-in AI chat, powered by OpenRouter.
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- AUTH SCREEN                         -->
+<!-- ═══════════════════════════════════ -->
+<div id="auth-screen">
+  <div id="back-to-land" onclick="goToLanding()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back
+  </div>
+  <div id="auth-box">
+    <div id="auth-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      CodeLite
+    </div>
+    <div class="auth-sub">Your personal online IDE</div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" onclick="setAuthMode('login')">Log in</div>
+      <div class="auth-tab" id="tab-signup" onclick="setAuthMode('signup')">Sign up</div>
+    </div>
+
+    <div class="auth-field">
+      <label>Username</label>
+      <input type="text" id="auth-username" placeholder="yourname" autocomplete="username"/>
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuth()"/>
+    </div>
+
+    <button id="auth-submit" onclick="doAuth()">Log in</button>
+    <div id="auth-error"></div>
+
+    <div id="auth-note">
+      🔒 Your account and OpenRouter API key are stored only in this browser (localStorage) — nothing is sent to any server. Use a device only you have access to.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════ -->
+<!-- IDE SCREEN                          -->
+<!-- ═══════════════════════════════════ -->
+<div id="ide-screen">
+  <div id="topbar">
+    <span id="logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      CodeLite
+    </span>
+    <span id="model-badge">⚙ Not configured</span>
+    <div class="sep"></div>
+    <button class="tbtn run" onclick="runCode()" title="Run code (F5)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run
+    </button>
+    <button class="tbtn ai" onclick="aiReview()" title="AI code review">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg> AI Review
+    </button>
+    <button class="tbtn fmt" onclick="fmtCode()" title="Format code">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/></svg> Format
+    </button>
+    <button class="tbtn share" onclick="openShareModal()" title="Share your code">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share
+    </button>
+    <button class="tbtn cfg" onclick="switchBtab('cfg')" title="Settings">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg> Setup
+    </button>
+    <div id="spacer"></div>
+    <span id="user-chip" onclick="switchBtab('cfg')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span id="user-chip-name">guest</span>
+    </span>
+  </div>
+
+  <div id="main">
+    <div id="sidebar">
+      <div id="sb-top">
+        <span>Explorer</span>
+        <button id="add-btn" onclick="showModal()" title="New file">+</button>
+      </div>
+      <div id="file-list"></div>
+      <div id="sb-resize"></div>
+    </div>
+
+    <div id="editor-wrap">
+      <div id="etabs"></div>
+      <div id="ed-container">
+        <div id="line-nums"></div>
+        <textarea id="code-ed" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"
+          oninput="onEdit()" onkeydown="handleEditorKey(event)" onscroll="syncScroll()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div id="v-resize"></div>
+
+  <div id="bottom">
+    <div id="btabs">
+      <div class="btab active" id="bt-ai" onclick="switchBtab('ai')">💬 AI Chat</div>
+      <div class="btab" id="bt-con" onclick="switchBtab('console')">⚡ Console</div>
+      <div class="btab" id="bt-cfg" onclick="switchBtab('cfg')">⚙ Config</div>
+      <div style="flex:1;"></div>
+      <label id="ctx-check" style="padding-right:14px;">
+        <input type="checkbox" id="send-ctx" checked> Send code context
+      </label>
+    </div>
+
+    <div id="ai-panel">
+      <div id="chat-msgs">
+        <div class="msg-ai"><div class="bbl">👋 Welcome! Configure your OpenRouter API key in the <b>Config</b> tab, pick a model, and start chatting about your code.</div></div>
+      </div>
+      <div id="chat-row">
+        <textarea id="chat-in" placeholder="Ask about your code... (Enter = send)" onkeydown="chatKeydown(event)"></textarea>
+        <button id="chat-send" onclick="sendChat()">Send ↗</button>
+      </div>
+    </div>
+
+    <div id="console-out"></div>
+
+    <div id="cfg-panel">
+      <div class="cfg-card">
+        <h4>Account</h4>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:13px;color:var(--text);">Logged in as <b id="cfg-username">guest</b></span>
+          <button id="logout-btn" onclick="doLogout()">Log out</button>
+        </div>
+      </div>
+
+      <div class="cfg-card">
+        <h4>🔑 API Configuration</h4>
+        <div class="cfg-row">
+          <label>OpenRouter API Key</label>
+          <input type="password" id="or-key" placeholder="sk-or-v1-xxxxxxxxxxxxxxxx"/>
+        </div>
+        <div class="cfg-row">
+          <label>Custom System Prompt</label>
+          <textarea id="sys-prompt" style="height:50px;resize:none;">You are a helpful coding assistant. Reply in the same language the user writes in. Be concise and practical. When showing code, use markdown code blocks.</textarea>
+        </div>
+        <div class="cfg-btns">
+          <button id="save-cfg" onclick="saveCfg()">✓ Save & Connect</button>
+          <span id="cfg-status"></span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);">
+          Don't have a key? Get one free at <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--accent);">openrouter.ai/keys</a> — your key never leaves this browser.
+        </div>
+      </div>
+
+      <div class="cfg-card">
+        <h4>🤖 Model Selection</h4>
+        <div id="model-filter-btns">
+          <button class="mf-btn active" onclick="filterModels('all',this)">All</button>
+          <button class="mf-btn" onclick="filterModels('free',this)">🆓 Free</button>
+          <button class="mf-btn" onclick="filterModels('openai',this)">OpenAI</button>
+          <button class="mf-btn" onclick="filterModels('anthropic',this)">Anthropic</button>
+          <button class="mf-btn" onclick="filterModels('google',this)">Google</button>
+          <button class="mf-btn" onclick="filterModels('meta-llama',this)">Meta</button>
+          <button class="mf-btn" onclick="filterModels('deepseek',this)">DeepSeek</button>
+          <button class="mf-btn" onclick="filterModels('qwen',this)">Qwen</button>
+        </div>
+        <div id="model-search-wrap">
+          <input type="text" id="model-search-input" placeholder="Search models..." oninput="renderModelList()"/>
+          <span id="model-search-icon">⌕</span>
+        </div>
+        <div id="model-list-wrap"><div id="model-loading">Loading models from OpenRouter...</div></div>
+        <div style="font-size:11px;color:var(--text3);">
+          Selected: <span id="selected-model-display" style="color:var(--text2);font-family:var(--mono);">none</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW FILE MODAL -->
+<div id="modal-ov" onclick="if(event.target===this)hideModal()">
+  <div id="modal">
+    <h3>New File</h3>
+    <input type="text" id="nf-name" placeholder="e.g. app.py, utils.js, index.html" onkeydown="if(event.key==='Enter')doAddFile()"/>
+    <div id="modal-btns">
+      <button onclick="hideModal()">Cancel</button>
+      <button class="ok" onclick="doAddFile()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div id="share-ov" onclick="if(event.target===this)hideShareModal()">
+  <div id="share-modal">
+    <h3>🔗 Share your code</h3>
+    <p>This link contains all your files, encoded in the URL itself. Anyone who opens it will see your code loaded into their own editor. It does <b>not</b> include your API key.</p>
+    <div id="share-link">Generating link...</div>
+    <div id="share-btns">
+      <button onclick="hideShareModal()">Close</button>
+      <button class="ok" onclick="copyShareLink()">Copy Link</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  SIMPLE CLIENT-SIDE AUTH (localStorage-based)
+//  NOTE: this is browser-level protection, not a secure
+//  multi-user backend. Good for personal/demo use.
+// ═══════════════════════════════════════════════════════
+let authMode = 'login';
+let currentUser = null;
+
+async function sha256(text) {
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem('codelite_users') || '{}'); }
+  catch(e) { return {}; }
+}
+function saveUsers(users) {
+  localStorage.setItem('codelite_users', JSON.stringify(users));
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+  document.getElementById('tab-signup').classList.toggle('active', mode === 'signup');
+  document.getElementById('auth-submit').textContent = mode === 'login' ? 'Log in' : 'Create account';
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function doAuth() {
+  const username = document.getElementById('auth-username').value.trim().toLowerCase();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+
+  if (!username || !password) {
+    errEl.textContent = 'Username and password dono chahiye.';
+    return;
+  }
+  if (username.length < 3) {
+    errEl.textContent = 'Username kam se kam 3 characters ka ho.';
+    return;
+  }
+  if (password.length < 4) {
+    errEl.textContent = 'Password kam se kam 4 characters ka ho.';
+    return;
+  }
+
+  const users = getUsers();
+  const hash = await sha256(password);
+
+  if (authMode === 'signup') {
+    if (users[username]) {
+      errEl.textContent = 'Yeh username pehle se hai. Log in try karo.';
+      return;
+    }
+    users[username] = { hash, createdAt: Date.now() };
+    saveUsers(users);
+    loginSuccess(username);
+  } else {
+    if (!users[username]) {
+      errEl.textContent = 'Account nahi mila. Sign up karo pehle.';
+      return;
+    }
+    if (users[username].hash !== hash) {
+      errEl.textContent = 'Galat password.';
+      return;
+    }
+    loginSuccess(username);
+  }
+}
+
+function loginSuccess(username) {
+  currentUser = username;
+  localStorage.setItem('codelite_session', username);
+  document.getElementById('user-chip-name').textContent = username;
+  document.getElementById('cfg-username').textContent = username;
+  loadUserData();
+  goToIDE();
+}
+
+function doLogout() {
+  if (!confirm('Log out karna hai? Unsaved changes save ho jaayenge is browser me.')) return;
+  saveUserData();
+  localStorage.removeItem('codelite_session');
+  currentUser = null;
+  goToLanding();
+}
+
+function goToAuth(mode) {
+  document.getElementById('landing').classList.remove('active');
+  document.getElementById('auth-screen').classList.add('active');
+  document.getElementById('ide-screen').classList.remove('active');
+  setAuthMode(mode);
+  document.getElementById('auth-username').value = '';
+  document.getElementById('auth-password').value = '';
+  setTimeout(() => document.getElementById('auth-username').focus(), 50);
+}
+
+function goToLanding() {
+  document.getElementById('landing').classList.add('active');
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('ide-screen').classList.remove('active');
+}
+
+function goToIDE() {
+  document.getElementById('landing').classList.remove('active');
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('ide-screen').classList.add('active');
+  renderFiles();
+  document.getElementById('code-ed').value = files[activeFile] || '';
+  updateLineNums();
+  switchBtab('ai');
+  setTimeout(() => { if (!allModels.length) loadModels(); }, 400);
+  checkForSharedCode();
+}
+
+// ═══════════════════════════════════════════════════════
+//  PER-USER DATA PERSISTENCE
+// ═══════════════════════════════════════════════════════
+function loadUserData() {
+  try {
+    const key = 'codelite_data_' + currentUser;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      const s = JSON.parse(saved);
+      if (s.files) { files = s.files; activeFile = Object.keys(files)[0] || 'main.py'; }
+      if (s.cfg) {
+        cfg = { ...cfg, ...s.cfg };
+        document.getElementById('or-key').value = cfg.key || '';
+        document.getElementById('sys-prompt').value = cfg.sys || document.getElementById('sys-prompt').value;
+        if (cfg.model) {
+          document.getElementById('selected-model-display').textContent = cfg.model;
+          updateModelBadge();
+        }
+      }
+    } else {
+      files = { 'main.py': STARTERS['main.py'], 'index.js': STARTERS['index.js'] };
+      activeFile = 'main.py';
+    }
+  } catch(e) {}
+}
+
+function saveUserData() {
+  if (!currentUser) return;
+  try {
+    const key = 'codelite_data_' + currentUser;
+    localStorage.setItem(key, JSON.stringify({ files, cfg }));
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════
+//  IDE STATE
+// ═══════════════════════════════════════════════════════
+const STARTERS = {
+  'main.py':`# Python starter
+def greet(name):
+    return f"Hello, {name}!"
+
+result = greet("World")
+print(result)
+`,
+  'index.js':`// JavaScript
+const add = (a, b) => a + b;
+const multiply = (a, b) => a * b;
+
+console.log("3 + 4 =", add(3, 4));
+console.log("3 × 4 =", multiply(3, 4));
+`,
+  'index.html':`<!DOCTYPE html>
+<html>
+<head>
+  <title>My App</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #f5f5f5; }
+    button { padding: 8px 16px; cursor: pointer; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>Hello World 👋</h1>
+  <button onclick="alert('Clicked!')">Click me</button>
+</body>
+</html>
+`,
+  'style.css':`/* Global styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #f5f5f5;
+}
+h1 { color: #333; }
+`,
+  'README.md':`# My Project
+
+A short description here.
+`
+};
+
+let files = { 'main.py': STARTERS['main.py'], 'index.js': STARTERS['index.js'] };
+let activeFile = 'main.py';
+let cfg = { key: '', model: '', sys: 'You are a helpful coding assistant. Reply in the same language the user writes in. Be concise and practical. When showing code, use markdown code blocks.' };
+let chatHistory = [];
+let allModels = [];
+let filteredModels = [];
+let modelFilter = 'all';
+
+function fileIcon(n) {
+  if (n.endsWith('.py'))   return '🐍';
+  if (n.endsWith('.js'))   return '📜';
+  if (n.endsWith('.ts'))   return '📘';
+  if (n.endsWith('.html')) return '🌐';
+  if (n.endsWith('.css'))  return '🎨';
+  if (n.endsWith('.md'))   return '📝';
+  if (n.endsWith('.json')) return '{}';
+  return '📄';
+}
+
+function renderFiles() {
+  const list = document.getElementById('file-list');
+  list.innerHTML = '';
+  Object.keys(files).forEach(name => {
+    const d = document.createElement('div');
+    d.className = 'fi' + (name === activeFile ? ' active' : '');
+    d.innerHTML = `
+      <span style="font-size:13px">${fileIcon(name)}</span>
+      <span class="fn" onclick="openFile('${esc(name)}')" title="${esc(name)}">${esc(name)}</span>
+      <button class="del" onclick="delFile('${esc(name)}')" title="Delete">✕</button>
+    `;
+    list.appendChild(d);
+  });
+  renderTabs();
+  updateLineNums();
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('etabs');
+  tabs.innerHTML = Object.keys(files).map(n => `
+    <div class="etab ${n === activeFile ? 'active' : ''}" onclick="openFile('${esc(n)}')">
+      ${fileIcon(n)} ${esc(n)}
+      <button class="etab-close" onclick="event.stopPropagation();delFile('${esc(n)}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function openFile(name) {
+  files[activeFile] = document.getElementById('code-ed').value;
+  activeFile = name;
+  document.getElementById('code-ed').value = files[name] || '';
+  renderFiles();
+}
+
+function onEdit() {
+  files[activeFile] = document.getElementById('code-ed').value;
+  updateLineNums();
+}
+
+function updateLineNums() {
+  const ed = document.getElementById('code-ed');
+  const lines = (ed.value.match(/\n/g) || []).length + 1;
+  const cur = document.getElementById('line-nums');
+  const nums = Array.from({length: lines}, (_, i) => i + 1).join('\n');
+  if (cur.textContent !== nums) cur.textContent = nums;
+}
+
+function syncScroll() {
+  document.getElementById('line-nums').scrollTop = document.getElementById('code-ed').scrollTop;
+}
+
+function showModal() {
+  document.getElementById('modal-ov').style.display = 'flex';
+  const inp = document.getElementById('nf-name');
+  inp.value = '';
+  setTimeout(() => inp.focus(), 50);
+}
+function hideModal() { document.getElementById('modal-ov').style.display = 'none'; }
+function doAddFile() {
+  const name = document.getElementById('nf-name').value.trim();
+  if (!name) return;
+  if (files[name] !== undefined) { openFile(name); hideModal(); return; }
+  files[name] = STARTERS[name] || '';
+  hideModal();
+  openFile(name);
+}
+function delFile(name) {
+  if (Object.keys(files).length === 1) { conLog('⚠ Ek file toh rehni chahiye!', 'err'); return; }
+  if (!confirm(`Delete "${name}"?`)) return;
+  delete files[name];
+  if (activeFile === name) {
+    activeFile = Object.keys(files)[0];
+    document.getElementById('code-ed').value = files[activeFile];
+  }
+  renderFiles();
+}
+
+function handleEditorKey(e) {
+  if (e.key === 'F5') { e.preventDefault(); runCode(); return; }
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const t = e.target, s = t.selectionStart;
+    if (e.shiftKey) {
+      const lineStart = t.value.lastIndexOf('\n', s - 1) + 1;
+      if (t.value.substring(lineStart, lineStart+2) === '  ') {
+        t.value = t.value.substring(0, lineStart) + t.value.substring(lineStart+2);
+        t.selectionStart = t.selectionEnd = Math.max(lineStart, s - 2);
+      }
+    } else {
+      t.value = t.value.substring(0, s) + '  ' + t.value.substring(t.selectionEnd);
+      t.selectionStart = t.selectionEnd = s + 2;
+    }
+    onEdit();
+  }
+  const PAIRS = {'(':')', '[':']', '{':'}', '"':'"', "'":"'"};
+  if (PAIRS[e.key] && !e.ctrlKey && !e.metaKey) {
+    e.preventDefault();
+    const t = e.target, s = t.selectionStart, en = t.selectionEnd;
+    const sel = t.value.substring(s, en);
+    const ins = e.key + sel + PAIRS[e.key];
+    t.value = t.value.substring(0, s) + ins + t.value.substring(en);
+    t.selectionStart = s + 1;
+    t.selectionEnd = en + 1;
+    onEdit();
+  }
+}
+
+function fmtCode() {
+  const ed = document.getElementById('code-ed');
+  let code = ed.value;
+  code = code.split('\n').map(l => l.replace(/\t/g, '  ').trimEnd()).join('\n');
+  code = code.replace(/\n{3,}/g, '\n\n');
+  ed.value = code;
+  onEdit();
+  conLog('✓ Code formatted (basic cleanup)', 'ok');
+}
+
+function runCode() {
+  switchBtab('console');
+  const code = document.getElementById('code-ed').value;
+  const file = activeFile;
+  conClear();
+
+  if (file.endsWith('.html')) {
+    conLog('Opening HTML in new tab...', 'info');
+    const w = window.open('', '_blank');
+    w.document.write(code);
+    w.document.close();
+    return;
+  }
+
+  if (file.endsWith('.js') || file.endsWith('.ts')) {
+    conLog(`▶ Running ${file}...\n`, 'info');
+    const origLog = console.log, origErr = console.error, origWarn = console.warn;
+    const msgs = [];
+    const capture = (type, ...args) => {
+      const txt = args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : String(a)).join(' ');
+      msgs.push({ type, txt });
+    };
+    console.log = (...a) => capture('ok', ...a);
+    console.error = (...a) => capture('err', ...a);
+    console.warn = (...a) => capture('info', ...a);
+    try {
+      new Function(code)();
+      msgs.forEach(m => conLog(m.txt, m.type));
+      conLog('\n✓ Execution complete', 'ok');
+    } catch(e) {
+      msgs.forEach(m => conLog(m.txt, m.type));
+      conLog('✗ Error: ' + e.message, 'err');
+    } finally {
+      console.log = origLog; console.error = origErr; console.warn = origWarn;
+    }
+    return;
+  }
+
+  if (file.endsWith('.py')) {
+    conLog(`ℹ Python browser me directly run nahi hota.\nAI Chat me "run this code" ya "explain this" poochho!`, 'info');
+    return;
+  }
+  conLog(`ℹ ${file} — is file type ko browser me run nahi kar sakte.`, 'info');
+}
+
+function conLog(msg, type='') {
+  const el = document.getElementById('console-out');
+  const span = document.createElement('span');
+  span.className = type ? 'con-' + type : '';
+  span.textContent = msg + '\n';
+  el.appendChild(span);
+  el.scrollTop = el.scrollHeight;
+}
+function conClear() { document.getElementById('console-out').innerHTML = ''; }
+
+// ═══════════════════════════════════════════════════════
+//  MODELS
+// ═══════════════════════════════════════════════════════
+async function loadModels() {
+  const wrap = document.getElementById('model-list-wrap');
+  wrap.innerHTML = '<div id="model-loading">⏳ Loading 600+ models from OpenRouter...</div>';
+  const key = document.getElementById('or-key').value.trim() || cfg.key;
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (key) headers['Authorization'] = 'Bearer ' + key;
+    const res = await fetch('https://openrouter.ai/api/v1/models', { headers });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    allModels = (data.data || []).sort((a, b) => {
+      const af = isFree(a), bf = isFree(b);
+      if (af && !bf) return -1;
+      if (!af && bf) return 1;
+      return a.id.localeCompare(b.id);
+    });
+    renderModelList();
+  } catch(e) {
+    wrap.innerHTML = `<div id="model-loading" style="color:var(--danger)">✗ Models load nahi hue: ${e.message}<br><small style="color:var(--text3)">API key daalo aur phir try karo.</small></div>`;
+  }
+}
+function isFree(m) {
+  return m.id.includes(':free') || (m.pricing && (m.pricing.prompt === '0' || m.pricing.prompt === 0) && (m.pricing.completion === '0' || m.pricing.completion === 0));
+}
+function ctxStr(m) {
+  const c = m.context_length;
+  if (!c) return '';
+  if (c >= 1000000) return (c/1000000).toFixed(1) + 'M';
+  if (c >= 1000) return Math.round(c/1000) + 'k';
+  return c;
+}
+function filterModels(f, btn) {
+  modelFilter = f;
+  document.querySelectorAll('.mf-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderModelList();
+}
+function renderModelList() {
+  if (!allModels.length) return;
+  const q = (document.getElementById('model-search-input').value || '').toLowerCase();
+  const wrap = document.getElementById('model-list-wrap');
+  filteredModels = allModels.filter(m => {
+    if (modelFilter === 'free' && !isFree(m)) return false;
+    if (modelFilter !== 'all' && modelFilter !== 'free' && !m.id.startsWith(modelFilter)) return false;
+    if (q && !m.id.toLowerCase().includes(q) && !(m.name || '').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  if (!filteredModels.length) {
+    wrap.innerHTML = '<div id="model-loading" style="color:var(--text2)">No models found</div>';
+    return;
+  }
+  wrap.innerHTML = filteredModels.map(m => `
+    <div class="model-item ${cfg.model === m.id ? 'selected' : ''}" onclick="selectModel('${esc(m.id)}')">
+      <span class="mi-name">${esc(m.id)}</span>
+      <span class="mi-ctx">${ctxStr(m)}</span>
+      <span class="mi-badge ${isFree(m) ? 'free' : 'paid'}">${isFree(m) ? 'FREE' : 'paid'}</span>
+    </div>
+  `).join('');
+}
+function selectModel(id) {
+  cfg.model = id;
+  document.getElementById('selected-model-display').textContent = id;
+  document.querySelectorAll('.model-item').forEach(el => {
+    el.classList.toggle('selected', el.querySelector('.mi-name').textContent.trim() === id);
+  });
+}
+
+function updateModelBadge() {
+  const badge = document.getElementById('model-badge');
+  if (!cfg.model) { badge.textContent = '⚙ Not configured'; badge.style.cssText = ''; return; }
+  const short = cfg.model.split('/').pop().replace(':free','') + (cfg.model.includes(':free')?' (FREE)':'');
+  badge.textContent = '✓ ' + short;
+  badge.style.cssText = 'background:var(--success-bg);color:var(--success);border-color:rgba(26,127,55,.3)';
+}
+
+function saveCfg() {
+  cfg.key = document.getElementById('or-key').value.trim();
+  cfg.sys = document.getElementById('sys-prompt').value.trim();
+  const st = document.getElementById('cfg-status');
+  if (!cfg.key) { st.innerHTML = '<span style="color:var(--danger)">✗ API key daalo!</span>'; return; }
+  if (!cfg.model) { st.innerHTML = '<span style="color:var(--danger)">✗ Model select karo!</span>'; return; }
+  updateModelBadge();
+  st.innerHTML = '<span style="color:var(--success)">✓ Connected!</span>';
+  saveUserData();
+  loadModels();
+  setTimeout(() => switchBtab('ai'), 900);
+}
+
+async function callOR(messages) {
+  if (!cfg.key) throw new Error('API key configure nahi hai! Config tab me daalo.');
+  if (!cfg.model) throw new Error('Model select nahi kiya! Config tab me select karo.');
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key, 'HTTP-Referer': location.href, 'X-Title': 'CodeLite IDE' },
+    body: JSON.stringify({ model: cfg.model, messages: [{ role: 'system', content: cfg.sys }, ...messages], max_tokens: 4096, stream: false })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error('Empty response from model');
+  return content;
+}
+
+function addMsg(role, html) {
+  const box = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = role === 'user' ? 'msg-user' : 'msg-ai';
+  d.innerHTML = `<div class="bbl">${html}</div>`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  return d;
+}
+function formatAIMsg(text) {
+  text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => `<pre><code>${esc(code.trim())}</code></pre>`);
+  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chat-in');
+  const btn = document.getElementById('chat-send');
+  let userMsg = inp.value.trim();
+  if (!userMsg) return;
+  if (!cfg.key || !cfg.model) {
+    addMsg('ai', '⚙️ Pehle <b>Config</b> tab me API key aur model configure karo!');
+    switchBtab('cfg');
+    return;
+  }
+  const sendCtx = document.getElementById('send-ctx').checked;
+  const code = document.getElementById('code-ed').value;
+  let apiMsg = userMsg;
+  if (sendCtx && code.trim()) apiMsg = `${userMsg}\n\n<current_file name="${activeFile}">\n${code}\n</current_file>`;
+
+  addMsg('user', esc(userMsg));
+  inp.value = '';
+  btn.disabled = true;
+  const typing = addMsg('ai', '<span style="color:var(--text3)">⏳ Thinking...</span>');
+  chatHistory.push({ role: 'user', content: apiMsg });
+
+  try {
+    const reply = await callOR(chatHistory);
+    chatHistory.push({ role: 'assistant', content: reply });
+    typing.querySelector('.bbl').innerHTML = formatAIMsg(reply);
+  } catch(e) {
+    typing.querySelector('.bbl').innerHTML = `<span style="color:var(--danger)">✗ Error: ${esc(e.message)}</span>`;
+    chatHistory.pop();
+  }
+  btn.disabled = false;
+  const box = document.getElementById('chat-msgs');
+  box.scrollTop = box.scrollHeight;
+}
+function chatKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }
+
+async function aiReview() {
+  switchBtab('ai');
+  const code = document.getElementById('code-ed').value;
+  if (!code.trim()) { addMsg('ai', 'Editor me kuch code toh likhein pehle! 😊'); return; }
+  if (!cfg.key || !cfg.model) { addMsg('ai', '⚙️ Pehle Config tab me API key aur model configure karo!'); switchBtab('cfg'); return; }
+  addMsg('user', `Review karo mera ${activeFile} ka code`);
+  const btn = document.getElementById('chat-send');
+  btn.disabled = true;
+  const typing = addMsg('ai', '<span style="color:var(--text3)">⏳ Reviewing code...</span>');
+  const prompt = `Please review this ${activeFile} code:\n\n\`\`\`\n${code}\n\`\`\`\n\nCheck for: bugs, improvements, best practices, security issues.`;
+  chatHistory.push({ role: 'user', content: prompt });
+  try {
+    const reply = await callOR(chatHistory);
+    chatHistory.push({ role: 'assistant', content: reply });
+    typing.querySelector('.bbl').innerHTML = formatAIMsg(reply);
+  } catch(e) {
+    typing.querySelector('.bbl').innerHTML = `<span style="color:var(--danger)">✗ Error: ${esc(e.message)}</span>`;
+    chatHistory.pop();
+  }
+  btn.disabled = false;
+  document.getElementById('chat-msgs').scrollTop = 999999;
+}
+
+function switchBtab(tab) {
+  document.getElementById('bt-ai').classList.toggle('active', tab === 'ai');
+  document.getElementById('bt-con').classList.toggle('active', tab === 'console');
+  document.getElementById('bt-cfg').classList.toggle('active', tab === 'cfg');
+  document.getElementById('ai-panel').style.display    = tab === 'ai'      ? 'flex' : 'none';
+  document.getElementById('console-out').style.display = tab === 'console' ? 'block': 'none';
+  document.getElementById('cfg-panel').style.display   = tab === 'cfg'     ? 'flex' : 'none';
+  if (tab === 'cfg' && !allModels.length) loadModels();
+}
+
+// ═══════════════════════════════════════════════════════
+//  SHARE FEATURE — encode files into URL hash
+// ═══════════════════════════════════════════════════════
+function openShareModal() {
+  files[activeFile] = document.getElementById('code-ed').value;
+  const payload = { files, active: activeFile };
+  const json = JSON.stringify(payload);
+  const encoded = btoa(unescape(encodeURIComponent(json)));
+  const url = location.origin + location.pathname + '#share=' + encoded;
+  document.getElementById('share-link').textContent = url;
+  document.getElementById('share-ov').style.display = 'flex';
+  window._shareUrl = url;
+}
+function hideShareModal() { document.getElementById('share-ov').style.display = 'none'; }
+function copyShareLink() {
+  navigator.clipboard.writeText(window._shareUrl).then(() => {
+    const btn = document.querySelector('#share-btns .ok');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = window._shareUrl;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+function checkForSharedCode() {
+  const hash = location.hash;
+  if (hash.startsWith('#share=')) {
+    try {
+      const encoded = hash.substring(7);
+      const json = decodeURIComponent(escape(atob(encoded)));
+      const payload = JSON.parse(json);
+      if (payload.files && Object.keys(payload.files).length) {
+        if (confirm('Yeh link me shared code hai. Load karna hai? (Aapka current code overwrite ho jaayega)')) {
+          files = payload.files;
+          activeFile = payload.active && files[payload.active] !== undefined ? payload.active : Object.keys(files)[0];
+          renderFiles();
+          document.getElementById('code-ed').value = files[activeFile];
+          updateLineNums();
+        }
+      }
+    } catch(e) { conLog('✗ Shared link decode nahi hua', 'err'); }
+    history.replaceState(null, '', location.pathname);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  RESIZE
+// ═══════════════════════════════════════════════════════
+(function() {
+  const resizer = document.getElementById('sb-resize');
+  const sidebar = document.getElementById('sidebar');
+  let dragging = false, startX = 0, startW = 0;
+  resizer.addEventListener('mousedown', e => {
+    dragging = true; startX = e.clientX; startW = sidebar.offsetWidth;
+    resizer.classList.add('dragging'); document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    sidebar.style.width = Math.min(320, Math.max(140, startW + e.clientX - startX)) + 'px';
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false; resizer.classList.remove('dragging'); document.body.style.cursor = ''; document.body.style.userSelect = '';
+  });
+})();
+(function() {
+  const resizer = document.getElementById('v-resize');
+  const bottom = document.getElementById('bottom');
+  let dragging = false, startY = 0, startH = 0;
+  resizer.addEventListener('mousedown', e => {
+    dragging = true; startY = e.clientY; startH = bottom.offsetHeight;
+    resizer.classList.add('dragging'); document.body.style.cursor = 'row-resize'; document.body.style.userSelect = 'none';
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const delta = startY - e.clientY;
+    bottom.style.height = Math.min(window.innerHeight * 0.6, Math.max(100, startH + delta)) + 'px';
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false; resizer.classList.remove('dragging'); document.body.style.cursor = ''; document.body.style.userSelect = '';
+  });
+})();
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); sendChat(); }
+  if (e.key === 'F5' && document.getElementById('ide-screen').classList.contains('active')) { e.preventDefault(); runCode(); }
+  if (e.key === 'Escape') { hideModal(); hideShareModal(); }
+});
+
+// Autosave every few seconds while in IDE
+setInterval(() => { if (currentUser) saveUserData(); }, 4000);
+
+// ═══════════════════════════════════════════════════════
+//  INIT — check for existing session
+// ═══════════════════════════════════════════════════════
+(function init() {
+  const session = localStorage.getItem('codelite_session');
+  if (session) {
+    const users = getUsers();
+    if (users[session]) {
+      currentUser = session;
+      document.getElementById('user-chip-name').textContent = session;
+      document.getElementById('cfg-username').textContent = session;
+      loadUserData();
+      goToIDE();
+      return;
+    }
+  }
+  // If a share link is opened while logged out, send to signup first
+  if (location.hash.startsWith('#share=')) {
+    goToAuth('signup');
+  } else {
+    goToLanding();
+  }
+})();
+</script>
+</body>
+</html>
